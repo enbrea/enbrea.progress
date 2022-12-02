@@ -5,13 +5,14 @@
 
 A small .NET library for displaying progress in console apps:
 
-+ Supports .NET Core 3.1, .NET 5 and .NET 6
++ Supports .NET Core 3.1, .NET 5, .NET 6 and .NET 7
 + Supports output redirection.
 + Supports callouts (information, success, warning, error)
-+ Supports three diiferent units of progress
++ Supports three different units of progress
   + Percent
   + Count
   + FileSize
+  + and additionally custom formatted values
 
 ## Installation
 

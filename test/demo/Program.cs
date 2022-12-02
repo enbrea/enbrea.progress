@@ -101,8 +101,42 @@ namespace Enbrea.Progress.Demo
 				report.Message("Data A and B loaded");
 				report.NewLine();
 
+                // Custom Value Demo
+                report = new ProgressReport()
+                {
+                    Theme = new ProgressReportTheme()
+                    {
+                        ProgressTextFormat = "> {0}"
+                    }
+                };
+
+                report.Caption("Custom Value Demo");
+
+                report.Start("Open File");
+                DoSomething(20);
+                report.Finish();
+
+                report.Start("Load Data A");
+                for (var i = 1; i <= 100; ++i)
+                {
+                    DoSomething(10);
+                    report.Continue("{0}/{1}", i, i*10);
+                }
+                report.Finish();
+
+                report.Start("Load Data B");
+                for (var i = 1; i <= 100; ++i)
+                {
+                    DoSomething(20);
+                    report.Continue("{0}/{1}", i, i * 2);
+                }
+                report.Finish("{0}/{1}", 100, 200);
+
+                report.Message("Data A and B loaded");
+                report.NewLine();
+
 				// Failed Demo
-				report = new ProgressReport(ProgressUnit.Percent)
+                report = new ProgressReport(ProgressUnit.Percent)
 				{
                     Theme = new ProgressReportTheme()
                     {

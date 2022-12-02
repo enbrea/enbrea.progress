@@ -36,6 +36,11 @@ namespace Enbrea.Progress
         }
 
         /// <summary>
+        /// The current custom progress message 
+        /// </summary>
+        public string CurrentCustomProgressValue { get; internal set; }
+
+        /// <summary>
         /// The current progress message 
         /// </summary>
         public string CurrentProgressMessage { get; internal set; }
@@ -123,17 +128,45 @@ namespace Enbrea.Progress
         /// Continues progress by incrementing the progress value and writing it to the standard 
         /// output stream. 
         /// </summary>
-        /// <param name="progressValue">New progress value</param>
-        public void Continue(long progressValue)
+        /// <param name="newProgressValue">New progress value</param>
+        public void Continue(long newProgressValue)
         {
-            if (progressValue > CurrentProgressValue)
+            if (newProgressValue > CurrentProgressValue)
             {
-                WriteProgressValue(progressValue);
+                WriteProgressValue(newProgressValue);
 
                 InProgress = true;
 
-                CurrentProgressValue = progressValue;
+                CurrentProgressValue = newProgressValue;
             }
+        }
+
+        /// <summary>
+        /// Continues progress by incrementing the progress value and writing it to the standard 
+        /// output stream. 
+        /// </summary>
+        /// <param name="newCustomProgressValue">New custom progress value</param>
+        public void Continue(string newCustomProgressValue)
+        {
+            if (newCustomProgressValue != CurrentCustomProgressValue)
+            {
+                WriteProgressValue(newCustomProgressValue);
+
+                InProgress = true;
+
+                CurrentCustomProgressValue = newCustomProgressValue;
+            }
+        }
+
+        /// <summary>
+        /// Continues progress by incrementing the progress value and writing it to the standard 
+        /// output stream. 
+        /// </summary>
+        /// <param name="newCustomProgressValueFormat">New custom progress value format string</param>
+        /// <param name="args">An object array that contains zero or more objects to format</param>
+        public void Continue(string newCustomProgressValueFormat, params object[] args)
+        {
+            Continue(string.Format(newCustomProgressValueFormat, args));
         }
 
         /// <summary>
@@ -163,44 +196,67 @@ namespace Enbrea.Progress
         /// </summary>
         public void Finish()
         {
+            if (CurrentCustomProgressValue != null) Finish(CurrentCustomProgressValue);
+            else Finish(CurrentProgressValue);
+        }
+
+        /// <summary>
+        /// Finsishs the current progress report by writing the given progress value, the status
+        /// <see cref="ProgressResult.OK"/> and the line terminator to the standard output stream.
+        /// </summary>
+        /// <param name="newProgressValue">The final progress value</param>
+        public void Finish(long newProgressValue)
+        {
             if (InProgress)
             {
-                WriteProgressValue(CurrentProgressValue);
+                WriteProgressValue(newProgressValue);
 
                 InProgress = false;
+
+                WriteStatus(ProgressResult.OK);
+
+                if (!Console.IsOutputRedirected)
+                {
+                    Console.CursorVisible = true;
+                }
+
+                NewLine();
             }
-
-            WriteStatus(ProgressResult.OK);
-
-            if (!Console.IsOutputRedirected)
-            {
-                Console.CursorVisible = true;
-            }
-
-            NewLine();
         }
 
         /// <summary>
         /// Finsishs the current progress report by writing the given progress value, the status 
         /// <see cref="ProgressResult.OK"/> and the line terminator to the standard output stream. 
         /// </summary>
-        /// <param name="progressValue">A progress value</param>
-        public void Finish(long progressValue)
+        /// <param name="newCustomProgressValue">The final custom progress value</param>
+        public void Finish(string newCustomProgressValue)
         {
-            CurrentProgressValue = progressValue;
-
-            WriteProgressValue(progressValue);
-
-            InProgress = false;
-
-            WriteStatus(ProgressResult.OK);
-
-            if (!Console.IsOutputRedirected)
+            if (InProgress)
             {
-                Console.CursorVisible = true;
-            }
+                WriteProgressValue(newCustomProgressValue);
 
-            NewLine();
+                InProgress = false;
+
+                WriteStatus(ProgressResult.OK);
+
+                if (!Console.IsOutputRedirected)
+                {
+                    Console.CursorVisible = true;
+                }
+
+                NewLine();
+            }
+        }
+
+        /// <summary>
+        /// Finsishs the current progress report by writing the given progress value, the status 
+        /// <see cref="ProgressResult.OK"/> and the line terminator to the standard output stream. 
+        /// </summary>
+        /// <param name="newCustomProgressValueFormat">The final custom progress value format string</param>
+        /// <param name="args">An object array that contains zero or more objects to format</param>
+        public void Finish(string newCustomProgressValueFormat, params object[] args)
+        {
+            Finish(string.Format(newCustomProgressValueFormat, args));
         }
 
         /// <summary>
@@ -247,10 +303,11 @@ namespace Enbrea.Progress
         /// </summary>
         public void Start(string text)
         {
-            InProgress = false;
+            InProgress = true;
 
             CurrentProgressMessage = string.Format(Theme.ProgressTextFormat, text);
             CurrentProgressValue = 0;
+            CurrentCustomProgressValue = null;
 
             WriteProgressMessage();
 
@@ -407,20 +464,29 @@ namespace Enbrea.Progress
         /// <param name="progressValue">The progress value</param>
         private void WriteProgressValue(long progressValue)
         {
+            WriteProgressValue(GetProgressValueStr(progressValue));
+        }
+
+        /// <summary>
+        /// Overrides the current progress value with the given progress value as text to the 
+        /// standard output stream.
+        /// </summary>
+        /// <param name="progressValueStr">The progress value as string</param>
+        private void WriteProgressValue(string customProgressValue)
+        {
             if ((!NoProgress) && (!Console.IsOutputRedirected))
             {
-                var progressValueStr = GetProgressValueStr(progressValue);
-                var progressMessageLength = MaxMessageLength - progressValueStr.Length - 1;
+                var progressMessageLength = MaxMessageLength - customProgressValue.Length - 1;
                 var progressValueLength = MaxMessageLength - progressMessageLength - 1;
 
-                if ((progressMessageLength + progressValueLength) >= (progressValueStr.Length + progressValueStr.Length))
+                if ((progressMessageLength + progressValueLength) >= (customProgressValue.Length + customProgressValue.Length))
                 {
                     Console.Write(string.Empty.PadLeft(progressMessageLength + progressValueLength + 2, '\b'));
                     Console.ForegroundColor = Theme.ProgressTextColor;
                     Console.Write(CurrentProgressMessage.CutOrPadRight(progressMessageLength));
                     Console.ForegroundColor = Theme.ProgressValueColor;
                     Console.Write(' ');
-                    Console.Write(progressValueStr.PadLeft(progressValueLength));
+                    Console.Write(customProgressValue.PadLeft(progressValueLength));
                     Console.Write(' ');
                 }
             }
