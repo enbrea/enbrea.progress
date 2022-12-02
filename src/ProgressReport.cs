@@ -212,16 +212,16 @@ namespace Enbrea.Progress
                 WriteProgressValue(newProgressValue);
 
                 InProgress = false;
-
-                WriteStatus(ProgressResult.OK);
-
-                if (!Console.IsOutputRedirected)
-                {
-                    Console.CursorVisible = true;
-                }
-
-                NewLine();
             }
+
+            WriteStatus(ProgressResult.OK);
+
+            if (!Console.IsOutputRedirected)
+            {
+                Console.CursorVisible = true;
+            }
+
+            NewLine();
         }
 
         /// <summary>
@@ -237,15 +237,16 @@ namespace Enbrea.Progress
 
                 InProgress = false;
 
-                WriteStatus(ProgressResult.OK);
-
-                if (!Console.IsOutputRedirected)
-                {
-                    Console.CursorVisible = true;
-                }
-
-                NewLine();
             }
+
+            WriteStatus(ProgressResult.OK);
+
+            if (!Console.IsOutputRedirected)
+            {
+                Console.CursorVisible = true;
+            }
+
+            NewLine();
         }
 
         /// <summary>
@@ -303,7 +304,7 @@ namespace Enbrea.Progress
         /// </summary>
         public void Start(string text)
         {
-            InProgress = true;
+            InProgress = false;
 
             CurrentProgressMessage = string.Format(Theme.ProgressTextFormat, text);
             CurrentProgressValue = 0;
